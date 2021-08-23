@@ -1,4 +1,3 @@
-
 # LIBRERÍAS
 import os, pyfiglet, openai, pyttsx3, time
 from time import sleep
@@ -95,8 +94,6 @@ text_speech.runAndWait()
 print ('\n~ Clave API de OpenAI cargada satisfactoriamente.')
 
 sleep(2)
-
-
 
 
 limpiarterminal()
