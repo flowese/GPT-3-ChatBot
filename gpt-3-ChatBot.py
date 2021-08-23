@@ -85,7 +85,6 @@ titulo_api = convertoasci('OpenAi API\n')
 print(titulo_api)
 
 #### OPEN AI API KEY 
-# DESCOMENTAR ACTIVAR SI SE SUBE A UN REPOSITORIO (por seguridad)
 # PENDIENTE POSIBILIDAD DE CARGAR DE UN JSON LA LICENCIA.
 openai.api_key = input('~ Introduce la API de OpenAi para continuar: ')
 
