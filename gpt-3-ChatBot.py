@@ -1,22 +1,36 @@
+
+# LIBRERÍAS
 import os, pyfiglet, openai, pyttsx3, time
 from time import sleep
 from textwrap import dedent
 from translate import Translator
 import speech_recognition as sr
 
+# Iniciando modulo de voz a texto
 text_speech = pyttsx3.init()
+# Función de voz a texto
+def audioTranscript():
+        r = sr.Recognizer()
+        with sr.Microphone() as source:
+            audio_data = r.record(source, duration=5)
+            text = r.recognize_google(audio_data, language='es-ES')
+            return text
 
+# Variables del tiempo para que GPT-3 sepa el dia.
 hora = time.strftime("%H:%M:%S", time.localtime())
 dia = time.strftime("%d", time.localtime())
 mes = time.strftime("%m", time.localtime())
 ano = time.strftime("%Y", time.localtime())
 diasem = time.strftime("%A", time.localtime())
 ayer = int(dia)-1
-
+# Teraducimos los dias de la semana al Español con google translate api.
 traductor= Translator(to_lang="es")
 traduccion = traductor.translate(diasem)
+# Ponemos la primera letra del dia de la semana en mayúscula (estética).
 dia_semana = traduccion.capitalize()
 
+# Condicional que susituye numero mes por el nombre del mes. 
+# PENDIENTE REVISAR, PUEDE HACERSE CON DICCIONARIO O MAS FÁCIL.
 if mes == '01':
     mes = 'Enero'
 if mes == '02':
@@ -42,43 +56,91 @@ if mes == '11':
 if mes == '12':
     mes = 'Diciembre'
 
+# Función que limpia el terminal.
 def limpiarterminal():
     os.system('cls' if os.name == 'nt' else "printf '\033c'")
 
 
-# CONVERSIÓN DE TEXTOS A ASCI-ART PARA TITULOS
+# Función conversión textos a ASCI para los títulos de consola.
 def convertoasci(texto_asci):
     texto_asci = pyfiglet.figlet_format(texto_asci)
     return texto_asci
+
+### INICIANDO APLICACIÓN
+
+limpiarterminal()
+# Imprimir cargando, mostrar avisos texto y voz {robot}.IA
+titulo_aviso = convertoasci('CARGANDO..\n')
+print(titulo_aviso)
+text_speech.say('AVISO: Para los siguientes pasos activaremos el micrófono.')
+text_speech.runAndWait()
+print ('\n~ AVISO: Para los siguientes paso activaremos el micrófono.')
+sleep(4)
+text_speech.say('Micrófono activado correctamente.')
+text_speech.runAndWait()
+sleep(2)
 limpiarterminal()
 
-
+# Imprimir título OpenAI + clave input
 titulo_api = convertoasci('OpenAi API\n')
 print(titulo_api)
+
+#### OPEN AI API KEY 
+# DESCOMENTAR ACTIVAR SI SE SUBE A UN REPOSITORIO (por seguridad)
+# PENDIENTE POSIBILIDAD DE CARGAR DE UN JSON LA LICENCIA.
 openai.api_key = input('~ Introduce la API de OpenAi para continuar: ')
 
+text_speech.say('Clave API de OpenAI cargada satisfactoriamente.')
+text_speech.runAndWait()
+print ('\n~ Clave API de OpenAI cargada satisfactoriamente.')
+
+sleep(2)
+
+
 
 
 limpiarterminal()
-
+# Imprimir título HOLA y solicitamos inputs con voz a texto.
 titulo_inicio = convertoasci('Hola.')
 print(titulo_inicio)
+text_speech.say('Hola, acabas de crear una Inteligencia Artificial.')
+text_speech.runAndWait()
 print('Acabas de crear una Inteligencia Artificial.')
-robot = input('\n~ Ponle un nombre: ')
+text_speech.say('Ponle un nombre, dilo en voz alta:')
+text_speech.runAndWait()
+print('\n~ Ponle un nombre, dilo en voz alta: ')
+robot_int = audioTranscript()
+robot = robot_int
+print ('Has dicho: ', robot)
+text_speech.say(f'La inteligencia artificial se llamará {robot}.')
+text_speech.runAndWait()
+sleep(1)
 
 limpiarterminal()
 
+# Imprimir título {robot}.IA
 titulo_ia = convertoasci(f"{robot}.IA")
 print(titulo_ia)
 print('\nGracias.')
 sleep(1)
 
 limpiarterminal()
-
+# Imprimir título {robot}.IA ya definidp
 print(titulo_ia)
-humano = input('\n~ Ahora introduce tu nombre: ')
+text_speech.say(f'Ahora di tu nombre.')
+text_speech.runAndWait()
+print('\n~ Ahora di tu nombre: ')
+humano_int = audioTranscript()
+humano = humano_int
+print ('Has dicho: ', humano)
+text_speech.say(f'hola, {humano}. Eso es todo. Iniciando conversación con {robot}.')
+text_speech.runAndWait()
+sleep(1)
 
+# En un futuro posibilidad de definir descripción con input de usuario.
 #descripcion = input(f'Realiza una descripción de la situación entre {humano} y {robot}: ')
+
+# Descripción de la situación para GPT-3
 descripcion = f"""
 ~ {robot} es una inteligencia arificial de la empresa {robot}.IA. \n~ {humano} acaba de despertar a {robot} por primera vez."""
 
@@ -90,10 +152,11 @@ print (f'\n~ Hoy es {dia_semana} {dia} de {mes} del año {ano}.\n')
 
 sleep(4)
 limpiarterminal()
+
 print(titulo_ia)
 print (f'// Actualmente en conversación con {robot}.\n')
 
-
+# Función envia consulta y recibe API GPT-3
 def gpt3(prompt, engine='davinci', response_length=300,
          temperature=0.9, top_p=1, frequency_penalty=1, presence_penalty=1,
          start_text='', restart_text='', stop_seq=[]):
@@ -111,7 +174,9 @@ def gpt3(prompt, engine='davinci', response_length=300,
     new_prompt = prompt + start_text + respuesta + restart_text
     return respuesta, new_prompt
 
-
+# Función que gestiona el chat.
+# Ejemplo para GPT-3, contexto de entrevista y personalidad.
+# REVISAR SI SE PUEDE MEJORAR CON UN DICCIONARIO O FICHERO JSON.
 def chat(humano, robot):
     prompt = dedent(
         f"""
@@ -174,5 +239,5 @@ def chat(humano, robot):
         text_speech.say(respuesta)
         text_speech.runAndWait()
 
-
+# INICIAMOS LA FUNICIÓN CHAT
 chat(humano, robot)
