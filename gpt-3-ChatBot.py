@@ -28,7 +28,7 @@ traduccion = traductor.translate(diasem)
 # Ponemos la primera letra del dia de la semana en mayúscula (estética).
 dia_semana = traduccion.capitalize()
 
-# Condicional que susituye numero mes por el nombre del mes. 
+# Condicional que susituye número mes por el nombre del mes. 
 # PENDIENTE REVISAR, PUEDE HACERSE CON DICCIONARIO O MAS FÁCIL.
 if mes == '01':
     mes = 'Enero'
