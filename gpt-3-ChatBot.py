@@ -1,9 +1,19 @@
 # LIBRERÍAS
-import os, pyfiglet, openai, pyttsx3, time
+import os, pyfiglet, openai, pyttsx3, time, sys
 from time import sleep
 from textwrap import dedent
 from translate import Translator
 import speech_recognition as sr
+from pydub import AudioSegment
+from pydub.playback import play
+
+# Iniciando ficheros de audio
+atone = 'resources/atone.mp3'
+confirmaudio = 'resources/confirm.wav'
+errorson = 'resources/errorson.wav'
+errorson = AudioSegment.from_mp3(errorson)
+atone = AudioSegment.from_mp3(atone)
+confirmaudio = AudioSegment.from_mp3(confirmaudio)
 
 # Iniciando modulo de voz a texto
 text_speech = pyttsx3.init()
@@ -11,9 +21,21 @@ text_speech = pyttsx3.init()
 def audioTranscript():
         r = sr.Recognizer()
         with sr.Microphone() as source:
-            audio_data = r.record(source, duration=5)
+            play(atone)
+            audio_data = r.record(source, duration=3)
             text = r.recognize_google(audio_data, language='es-ES')
             return text
+
+# ANIMACIÓN BARRA DE CARGA 
+def mostrar_cargando():
+    animacion_barras = ["                             ■□□□□□□□□□", "                             ■■□□□□□□□□", "                             ■■■□□□□□□□", "                             ■■■■□□□□□□", "                             ■■■■■□□□□□", "                             ■■■■■■□□□□",
+                        "                             ■■■■■■■□□□", "                             ■■■■■■■□□□", "                             ■■■■■■■□□□", "                             ■■■■■■■■□□", "                             ■■■■■■■■■□", "                             ■■■■■■■■■■"]
+    # - Animar la barra
+    for i in range(len(animacion_barras)):
+        time.sleep(0.6)
+        sys.stdout.write("\r" + animacion_barras[i % len(animacion_barras)])
+        sys.stdout.flush()
+    return animacion_barras
 
 # Variables del tiempo para que GPT-3 sepa el dia.
 hora = time.strftime("%H:%M:%S", time.localtime())
@@ -65,16 +87,20 @@ def convertoasci(texto_asci):
     texto_asci = pyfiglet.figlet_format(texto_asci)
     return texto_asci
 
+
+
 ### INICIANDO APLICACIÓN
 
 limpiarterminal()
 # Imprimir cargando, mostrar avisos texto y voz {robot}.IA
-titulo_aviso = convertoasci('CARGANDO..\n')
+titulo_aviso = convertoasci('CARGANDO . .\n')
 print(titulo_aviso)
+mostrar_cargando()
 text_speech.say('AVISO: Para los siguientes pasos activaremos el micrófono.')
 text_speech.runAndWait()
-print ('\n~ AVISO: Para los siguientes pasos activaremos el micrófono.')
-sleep(4)
+print ('\n\n~ AVISO: Para los siguientes paso activaremos el micrófono.')
+sleep(2)
+play(confirmaudio)
 text_speech.say('Micrófono activado correctamente.')
 text_speech.runAndWait()
 sleep(2)
@@ -105,7 +131,36 @@ print('Acabas de crear una Inteligencia Artificial.')
 text_speech.say('Ponle un nombre, dilo en voz alta:')
 text_speech.runAndWait()
 print('\n~ Ponle un nombre, dilo en voz alta: ')
-robot_int = audioTranscript()
+
+while True:
+    try:
+        robot_int = audioTranscript()
+        break
+    except ValueError:
+        text_speech.say('Vaya! No te he escuchado bien...')
+        text_speech.runAndWait()
+        print ("\nOops! No te he escuchado bien...\n")
+        play(errorson)
+    except sr.UnknownValueError:
+        text_speech.say('Oops! No te he escuchado bien...')
+        text_speech.runAndWait()
+        print ("\nOops! No te he escuchado bien...\n")
+        play(errorson)
+    finally:
+        text_speech.say('Vamos a volver a intentarlo.')
+        text_speech.runAndWait()
+        print ('\nVamos a volver a intentarlo.\n')
+        limpiarterminal()
+        titulo_inicio = convertoasci('Hola.')
+        print(titulo_inicio)
+        text_speech.say('Hola, acabas de crear una Inteligencia Artificial.')
+        text_speech.runAndWait()
+        print('Acabas de crear una Inteligencia Artificial.')
+        text_speech.say('Ponle un nombre, dilo en voz alta:')
+        text_speech.runAndWait()
+        print('\n~ Ponle un nombre, dilo en voz alta: ')
+        sleep(2)
+
 robot = robot_int
 print ('Has dicho: ', robot)
 text_speech.say(f'La inteligencia artificial se llamará {robot}.')
@@ -222,8 +277,16 @@ def chat(humano, robot):
     {robot}: no por favor, faltaría mas, estoy para lo que necesites.
     """
     )
+
+
     while True:
+        ## Voz a texto, pendiente implementar en chat
+        #prompt += audioTranscript()
+        ## Revisar cadena
+        #humano+=(f': {prompt}')
         prompt += input(f'{humano}: ')
+
+
         respuesta, prompt = gpt3(prompt,
                               temperature=0.9,
                               frequency_penalty=1,
